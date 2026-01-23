@@ -13,7 +13,7 @@ spec:
     targetRevision: 2.57.0
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: observability
   syncPolicy:
     automated:
       prune: true
