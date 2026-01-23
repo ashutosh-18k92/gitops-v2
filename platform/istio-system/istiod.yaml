@@ -4,7 +4,7 @@ metadata:
   name: istiod
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-10"
+    argocd.argoproj.io/sync-wave: "-40"
 spec:
   project: default
   source:
@@ -15,7 +15,12 @@ spec:
       values: |
         meshConfig:
           accessLogFile: /dev/stdout
-          enableTracing
+          enableTracing: true
+          extensionProviders:
+            - name: jaeger
+              opentelemetry:
+                service: jaeger-collector.observability.svc.cluster.local
+                port: 4317
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system

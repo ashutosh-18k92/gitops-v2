@@ -1,16 +1,18 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: jaeger-operator
+  name: platform-apps
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-wave: "-50"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://jaegertracing.github.io/helm-charts
-    chart: jaeger-operator
-    targetRevision: 2.57.0
+    repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
+    targetRevision: HEAD
+    path: platform/operators
   destination:
     server: https://kubernetes.default.svc
     namespace: observability
@@ -18,4 +20,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-

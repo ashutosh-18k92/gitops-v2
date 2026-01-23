@@ -1,0 +1,40 @@
+adminUser: admin
+adminPassword: admin
+
+service:
+  type: ClusterIP
+  port: 3000
+
+grafana.ini:
+  auth.anonymous:
+    enabled: true
+    org_role: Viewer
+
+persistence:
+  enabled: false
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-operator-server.observability.svc.cluster.local
+        isDefault: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: istio
+        folder: Istio
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards/istio
+
+extraConfigmapMounts:
+  - name: istio-dashboards
+    configMap: grafana-istio-dashboards
+    mountPath: /var/lib/grafana/dashboards/istio
+    readOnly: true

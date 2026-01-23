@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-apps
+  name: namespace-app
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-10"
+    argocd.argoproj.io/sync-wave: "-70"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -12,12 +12,10 @@ spec:
   source:
     repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
     targetRevision: HEAD
-    path: platform
-    directory:
-      recurse: true
+    path: namespace
   destination:
     server: https://kubernetes.default.svc
-    namespace: observability
+    namespace: default
   syncPolicy:
     automated:
       prune: true

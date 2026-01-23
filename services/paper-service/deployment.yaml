@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paper-service
+  namespace: super-fortnight
+  labels:
+    app: paper-service
+    version: v1
+    team: paper-service-team
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paper-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: paper-service
+        version: v1
+        team: paper-service-team
+      annotations:
+        sidecar.istio.io/proxyCPU: 100m
+        sidecar.istio.io/proxyMemory: 128Mi
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      containers:
+        - name: paper-service
+          image: paper-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3002
+              name: http
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "3002"
+            - name: SERVICE_NAME
+              value: "paper"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 5
