@@ -1,9 +1,9 @@
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
-  name: jaeger-inmemory-instance
+  name: jaeger
   annotations:
-    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-wave: "-50"
 spec:
   image: jaegertracing/jaeger:latest
   ports:

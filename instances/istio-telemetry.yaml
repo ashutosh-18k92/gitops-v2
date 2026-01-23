@@ -1,0 +1,13 @@
+# infrastructure/app-level/istio-config/telemetry.yaml
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "-40"
+spec:
+  tracing:
+    - providers:
+        - name: jaeger
+      randomSamplingPercentage: 100

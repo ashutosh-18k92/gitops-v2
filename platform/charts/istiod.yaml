@@ -15,6 +15,12 @@ spec:
       values: |
         meshConfig:
           accessLogFile: /dev/stdout
+          enableTracing: true
+          extensionProviders:
+            - name: jaeger
+              opentelemetry:
+                service: jaeger-collector.observability.svc.cluster.local
+                port: 4317
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
