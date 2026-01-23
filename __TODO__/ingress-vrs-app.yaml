@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: service-apps
+  name: ingress-vrs-apps
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "50"
+    argocd.argoproj.io/sync-wave: "40"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -12,9 +12,7 @@ spec:
   source:
     repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
     targetRevision: HEAD
-    path: services
-    directory:
-      recurse: true
+    path: platform/ingress-virtual-services
   destination:
     server: https://kubernetes.default.svc
     namespace: super-fortnight
