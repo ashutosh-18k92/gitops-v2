@@ -2,19 +2,19 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: scissor-service-virtualservice
-  namespace: super-fortnight
+  namespace: istio-system
 spec:
   hosts:
-  - "scissor-service.api.local"
+  - scissor-service.api.local
   gateways:
-  - "super-fortnight/super-fortnight-gateway"
+  - super-fortnight-gateway
   http:
   - match:
     - uri:
         prefix: /api
     route:
     - destination:
-        host: "scissor-service.super-fortnight.svc.cluster.local"
+        host: scissor-service.super-fortnight.svc.cluster.local
         port:
           number: 3003
     retries: # worst-case timeout attempts x perTryTimeout
@@ -26,7 +26,7 @@ spec:
         prefix: /health
     route:
     - destination:
-        host: "scissor-service.super-fortnight.svc.cluster.local"
+        host: scissor-service.super-fortnight.svc.cluster.local
         port:
           number: 3003
     timeout: 2s

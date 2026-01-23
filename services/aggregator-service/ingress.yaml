@@ -2,19 +2,19 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: aggregator-service-virtualservice
-  namespace: super-fortnight
+  namespace: istio-system
 spec:
   hosts:
-  - "aggregator-service.api.local"
+  - aggregator-service.api.local
   gateways:
-  - "super-fortnight/super-fortnight-gateway"
+  - super-fortnight-gateway
   http:
   - match:
     - uri:
         prefix: /api
     route:
     - destination:
-        host: "aggregator-service.super-fortnight.svc.cluster.local"
+        host: aggregator-service.super-fortnight.svc.cluster.local
         port:
           number: 3000
     retries: # worst-case timeout attempts x perTryTimeout
@@ -26,7 +26,7 @@ spec:
         prefix: /health
     route:
     - destination:
-        host: "aggregator-service.super-fortnight.svc.cluster.local"
+        host: aggregator-service.super-fortnight.svc.cluster.local
         port:
           number: 3000
     timeout: 2s
