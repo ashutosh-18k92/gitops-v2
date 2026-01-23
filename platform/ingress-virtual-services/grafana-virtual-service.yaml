@@ -2,12 +2,12 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: grafana-virtual-service
-  namespace: observability
+  namespace: istio-system
 spec:
   hosts:
     - grafana.super-fortnight.com
   gateways:
-    - istio-system/observability-gateway
+    - observability-gateway
   http:
     - route:
         - destination:
