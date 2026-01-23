@@ -5,12 +5,16 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  syncPolicy:
 spec:
   project: default
   source:
     repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
     targetRevision: HEAD
     path: jaeger
+    directory:
+      include:
+        - 'eks-operator-app.yaml'
   destination:
     server: https://kubernetes.default.svc
     namespace: observability
