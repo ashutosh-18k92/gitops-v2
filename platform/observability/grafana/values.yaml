@@ -20,7 +20,7 @@ datasources:
       - name: Prometheus
         type: prometheus
         access: proxy
-        url: http://prometheus-operator-server.observability.svc.cluster.local
+        url: http://prometheus-server.observability.svc.cluster.local
         isDefault: true
 
 dashboardProviders:
