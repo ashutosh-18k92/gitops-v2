@@ -11,6 +11,11 @@ spec:
     repoURL: https://helm.elastic.co
     chart: eck-operator
     targetRevision: 3.2.0
+    helm:
+      values: |
+        limits:
+          memory: 128Mi
+
   destination:
     server: https://kubernetes.default.svc
     namespace: observability
