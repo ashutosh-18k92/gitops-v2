@@ -14,7 +14,7 @@ spec:
       requests:
         cpu: 128m
         memory: 128Mi
-        
+
   query:
     replicas: 1
 
@@ -26,7 +26,5 @@ spec:
     elasticsearch:
       nodeCount: 1
       redundancyPolicy: "SingleRedundancy"
-      esIndexCleaner:
-        enabled: true
-        numberOfDays: 1
+
 
