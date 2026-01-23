@@ -5,14 +5,17 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://grafana.github.io/helm-charts
-    chart: grafana
-    targetRevision: 7.3.9
-    path: platform/observability/grafana
-    helm:
-      valueFiles:
-        - values.yaml
+  sources:
+    - repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
+      targetRevision: HEAD
+      ref: myrepo
+      
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: grafana
+      targetRevision: 7.3.9
+      helm:
+        valueFiles:
+        - $myrepo/platform/observability/grafana/values.yaml
 
   destination:
     server: https://kubernetes.default.svc
