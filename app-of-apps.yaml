@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/ashutosh-18k92/platform-gitops.git
     targetRevision: HEAD
-    path: jaeger/
+    path: jaeger
   destination:
     server: https://kubernetes.default.svc
     namespace: observability
