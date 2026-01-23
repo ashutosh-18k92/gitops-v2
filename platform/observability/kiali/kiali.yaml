@@ -1,20 +1,19 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
 metadata:
-  name: kiali-instance-app
-  namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
+  name: kiali
+  namespace: observability
 spec:
-  project: default
-  source:
-    repoURL: https://github.com/ashutosh-18k92/platform-gitops.git
-    targetRevision: HEAD
-    path: infrastructure/kiali
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: observability
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  istio_namespace: istio-system
+  auth:
+    strategy: anonymous
+  deployment:
+    accessible_namespaces:
+      - "**"
+  external_services:
+    prometheus:
+      url: http://prometheus-server.observability.svc.cluster.local
+    tracing:
+      enabled: true
+      provider: jaeger
+      url: http://tracing-query.observability.svc.cluster.local:16686
