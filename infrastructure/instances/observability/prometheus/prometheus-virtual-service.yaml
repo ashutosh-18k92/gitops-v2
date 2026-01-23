@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: prometheus-virtual-service
+  namespace: observability
+spec:
+  hosts:
+    - prometheus.super-fortnight.com
+  gateways:
+    - istio-system/observability-gateway
+  http:
+    - route:
+        - destination:
+            host: prometheus-server.observability.svc.cluster.local
+            port:
+              number: 80
