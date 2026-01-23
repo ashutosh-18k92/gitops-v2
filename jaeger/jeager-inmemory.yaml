@@ -2,6 +2,8 @@ apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: jaeger-inmemory-instance
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
 spec:
   image: jaegertracing/jaeger:latest
   ports:
@@ -18,11 +20,11 @@ spec:
       jaeger_query:
         storage:
           traces: memstore
-          jaeger_storage:
-            backends:
-              some_storage:
-                elasticseacrh:
-                  servers: [<name-of-the-service>]
+      jaeger_storage:
+        backends:
+          memstore:
+            memory:
+              max_traces: 100000
     receivers:
       otlp:
         protocols:
@@ -33,5 +35,3 @@ spec:
     exporters:
       jaeger_storage_exporter:
         trace_storage: memstore
-
-

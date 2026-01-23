@@ -6,10 +6,10 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "10"
 spec:
-  version: 8.11.3
+  version: 3.2.0
   nodeSets:
     - name: default
-      count: 3
+      count: 1
       config:
         node.store.allow_mmap: false
       volumeClaimTemplates:
