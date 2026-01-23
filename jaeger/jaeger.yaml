@@ -1,7 +1,7 @@
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
-  name: tracing
+  name: jaeger-tracing
   namespace: observability
   annotations:
     argocd.argoproj.io/sync-wave: "20"
@@ -25,7 +25,7 @@ spec:
     type: elasticsearch
     elasticsearch:
       nodeCount: 1
-      redundancyPolicy: Single
+      redundancyPolicy: "SingleRedundancy"
       esIndexCleaner:
         enabled: true
         numberOfDays: 1
