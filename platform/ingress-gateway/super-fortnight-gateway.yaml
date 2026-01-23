@@ -1,11 +1,11 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: "super-fortnight-gateway"
-  namespace: "super-fortnight"
+  name: super-fortnight-gateway
+  namespace: istio-system
 spec:
   selector:
-    istio: ingressgateway
+    app: istio-ingress
   servers:
   - port:
       number: 80
