@@ -5,7 +5,7 @@ metadata:
   namespace: istio-system
 spec:
   selector:
-    app: istio-ingress
+    name: ingressgateway
   servers:
     - port:
         number: 80
