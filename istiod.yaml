@@ -15,6 +15,7 @@ spec:
       values: |
         meshConfig:
           accessLogFile: /dev/stdout
+          enableTracing
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
