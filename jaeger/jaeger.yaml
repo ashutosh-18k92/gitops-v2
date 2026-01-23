@@ -1,0 +1,32 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: tracing
+  namespace: observability
+  annotations:
+  	argocd.argoproj.io/sync-wave: "10"
+  
+spec:
+  strategy: production
+  collector:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 128m
+        memory: 128Mi
+
+  query:
+    replicas: 1
+
+  ingester:
+    replicas: 1
+
+  storage:
+    type: elasticsearch
+    elasticsearch:
+      nodeCount: 1
+      redundancyPolicy: Single
+      esIndexCleaner:
+        enabled: true
+        numberOfDays: 1
+
