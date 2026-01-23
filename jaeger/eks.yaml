@@ -4,7 +4,7 @@ metadata:
   name: tracing
   namespace: observability
   annotations:
-  	argocd.argoproj.io/sync-wave: "-2"
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   version: 8.11.3
   nodeSets:
