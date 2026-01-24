@@ -28,7 +28,7 @@ spec:
           grpc:
             endpoint: 0.0.0.0:16685
           http:
-            endpoint: 0.0.0.0:16686
+            endpoint: 0.0.0.0:16687
       jaeger_storage:
         backends:
           memstore:
