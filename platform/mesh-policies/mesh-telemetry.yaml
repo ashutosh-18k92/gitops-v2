@@ -16,6 +16,6 @@ spec:
         requested_host:
           header:
             name: host
-        source_host:
-          name: "Host"
-          defaultValue: "missing-host-header"
+        # source_host:
+        #   name: "Host"
+        #   defaultValue: "missing-host-header"
