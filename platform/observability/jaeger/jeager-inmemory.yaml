@@ -21,6 +21,14 @@ spec:
       jaeger_query:
         storage:
           traces: memstore
+          base_path: /
+          ui:
+            config_file: /etc/jaeger/ui-config.json
+            log_access: true
+          grpc:
+            endpoint: 0.0.0.0:16685
+          http:
+            endpoint: 0.0.0.0:16686
       jaeger_storage:
         backends:
           memstore:
