@@ -11,3 +11,6 @@ spec:
     - providers:
         - name: jaeger
       randomSamplingPercentage: 100
+      customTags:
+        header:
+          name: "Host"
