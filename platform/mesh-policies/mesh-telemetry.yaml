@@ -12,5 +12,7 @@ spec:
         - name: jaeger
       randomSamplingPercentage: 100
       customTags:
-        header:
+      # This forces the host to be recorded in every trace span
+        source_host:
           name: "Host"
+          defaultValue: "missing-host-header"
