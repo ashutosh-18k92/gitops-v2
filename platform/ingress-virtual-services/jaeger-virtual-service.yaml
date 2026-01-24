@@ -5,7 +5,7 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
-    - jaeger.super-fortnight.com
+    - tracing.super-fortnight.com
   gateways:
     - observability-gateway
   http:
