@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: jaeger-virtual-service
+  namespace: istio-system
+spec:
+  hosts:
+    - jaeger.super-fortnight.com
+  gateways:
+    - observability-gateway
+  http:
+    - route:
+        - destination:
+            host: jaeger-collector-extension.observability.svc.cluster.local
+            port:
+              number: 16686

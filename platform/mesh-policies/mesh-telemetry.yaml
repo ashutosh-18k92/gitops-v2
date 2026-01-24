@@ -1,4 +1,3 @@
-# infrastructure/app-level/istio-config/telemetry.yaml
 apiVersion: telemetry.istio.io/v1
 kind: Telemetry
 metadata:
@@ -16,6 +15,4 @@ spec:
         requested_host:
           header:
             name: host
-        # source_host:
-        #   name: "Host"
-        #   defaultValue: "missing-host-header"
+            defaultValue: "missing-host-header"
