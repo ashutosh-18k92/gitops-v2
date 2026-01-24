@@ -13,6 +13,9 @@ spec:
       randomSamplingPercentage: 100
       customTags:
       # This forces the host to be recorded in every trace span
+        requested_host:
+          header:
+            name: host
         source_host:
           name: "Host"
           defaultValue: "missing-host-header"

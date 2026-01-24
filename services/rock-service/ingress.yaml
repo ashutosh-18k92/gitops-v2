@@ -5,7 +5,8 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
-  - rock-service.api.local
+  - "rock-service.api.local"
+  - "rock-service.super-fortnight.svc.cluster.local"
   gateways:
   - super-fortnight-gateway
   http:
