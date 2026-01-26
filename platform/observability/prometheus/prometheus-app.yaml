@@ -1,3 +1,4 @@
+# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -5,13 +6,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/ashutosh-18k92/super-fortnight-prometheus.git
-    targetRevision: HEAD
-    path: prometheus-28.5.2/prometheus
-    helm:
-      valueFiles:
-        - my-values.yaml
+  sources:
+    - repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
+      targetRevision: HEAD
+      ref: gitops
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: prometheus
+      targetRevision: 28.5.2
+      helm:
+        valueFiles:
+          - $gitops/platform/observability/prometheus/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: observability

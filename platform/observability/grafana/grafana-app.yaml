@@ -8,14 +8,14 @@ spec:
   sources:
     - repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
       targetRevision: HEAD
-      ref: myrepo
-      
+      ref: gitops
+
     - repoURL: https://grafana.github.io/helm-charts
       chart: grafana
       targetRevision: 7.3.9
       helm:
         valueFiles:
-        - $myrepo/platform/observability/grafana/values.yaml
+          - $gitops/platform/observability/grafana/values.yaml
 
   destination:
     server: https://kubernetes.default.svc

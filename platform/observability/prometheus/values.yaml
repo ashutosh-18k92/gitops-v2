@@ -1,0 +1,63 @@
+rbac:
+  create: true # Automatically creates the ClusterRole and ClusterRoleBinding
+
+serviceAccounts:
+  prometheus-node-exporter:
+    create: true
+    name: "prometheus-node-exporter" # Ensure this matches your DaemonSet
+
+prometheus-node-exporter:
+  enabled: true
+  hostRootFsMount:
+    enabled: true
+    mountPropagation: None
+  hostNetwork: true
+  hostPID: true
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+  containerSecurityContext:
+    privileged: true
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: true
+    capabilities:
+      add:
+        - SYS_ADMIN
+        - SYS_PTRACE
+
+server:
+  enabled: true
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 80
+
+  verticalAutoscaler:
+    enabled: false
+
+  persistentVolume:
+    enabled: false
+
+  retention: 15d
+
+  extraScrapeConfigs:
+    - job_name: istio-envoy
+      kubernetes_sd_configs:
+        - role: pod
+
+      relabel_configs:
+        # Keep only Istio sidecar containers
+        - source_labels: [__meta_kubernetes_pod_container_name]
+          action: keep
+          regex: istio-proxy
+
+        # Rewrite address to Envoy admin port
+        - source_labels: [__address__]
+          action: replace
+          regex: (.+):.*
+          replacement: $1:15090
+
+        # Envoy metrics endpoint
+        - target_label: __metrics_path__
+          replacement: /stats/prometheus
