@@ -1,0 +1,207 @@
+# Kafka JMX Prometheus Exporter Configuration
+# Source: https://github.com/strimzi/strimzi-kafka-operator/blob/main/examples/metrics/kafka-metrics.yaml
+# Docs: https://github.com/prometheus/jmx_exporter
+#
+# This file is loaded by the JMX Exporter agent running inside Kafka broker pods.
+# It transforms JMX MBeans into Prometheus metrics format.
+
+# Global settings
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+
+rules:
+  # =============================================================================
+  # BROKER TOPIC METRICS
+  # Metrics about message flow per topic/partition
+  # =============================================================================
+  
+  # Per-partition metrics (most granular)
+  - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), topic=(.+), partition=(.*)><>Value
+    name: kafka_server_$1_$2
+    type: GAUGE
+    labels:
+      clientId: "$3"
+      topic: "$4"
+      partition: "$5"
+
+  # Per-broker replication metrics
+  - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), brokerHost=(.+), brokerPort=(.+)><>Value
+    name: kafka_server_$1_$2
+    type: GAUGE
+    labels:
+      clientId: "$3"
+      broker: "$4:$5"
+
+  # =============================================================================
+  # TLS/CONNECTION METRICS
+  # Track secure connections by cipher and protocol
+  # =============================================================================
+  
+  - pattern: kafka.server<type=(.+), cipher=(.+), protocol=(.+), listener=(.+), networkProcessor=(.+)><>connections
+    name: kafka_server_$1_connections_tls_info
+    type: GAUGE
+    labels:
+      cipher: "$2"
+      protocol: "$3"
+      listener: "$4"
+      networkProcessor: "$5"
+
+  # Client software version tracking
+  - pattern: kafka.server<type=(.+), clientSoftwareName=(.+), clientSoftwareVersion=(.+), listener=(.+), networkProcessor=(.+)><>connections
+    name: kafka_server_$1_connections_software
+    type: GAUGE
+    labels:
+      clientSoftwareName: "$2"
+      clientSoftwareVersion: "$3"
+      listener: "$4"
+      networkProcessor: "$5"
+
+  # =============================================================================
+  # REQUEST HANDLER METRICS
+  # Monitor thread pool utilization
+  # =============================================================================
+  
+  - pattern: kafka.(\w+)<type=(.+), name=(.+)Percent\w*><>MeanRate
+    name: kafka_$1_$2_$3_percent
+    type: GAUGE
+
+  - pattern: kafka.(\w+)<type=(.+), name=(.+)Percent\w*><>Value
+    name: kafka_$1_$2_$3_percent
+    type: GAUGE
+
+  - pattern: kafka.(\w+)<type=(.+), name=(.+)Percent\w*><>Count
+    name: kafka_$1_$2_$3_percent_count
+    type: COUNTER
+
+  # =============================================================================
+  # KRAFT CONTROLLER METRICS (Kafka 4.x / KRaft Mode)
+  # Critical for monitoring ZooKeeper-less clusters
+  # =============================================================================
+  
+  # Raft metrics - COUNTER types (always increasing)
+  - pattern: "kafka.server<type=raft-metrics><>(.+-total|.+-max):"
+    name: kafka_server_raft_metrics_$1
+    type: COUNTER
+
+  # Raft metrics - GAUGE types (variable values)
+  - pattern: "kafka.server<type=raft-metrics><>(.+):"
+    name: kafka_server_raft_metrics_$1
+    type: GAUGE
+
+  # Raft channel metrics - COUNTER types
+  - pattern: "kafka.server<type=raft-channel-metrics><>(.+-total|.+-max):"
+    name: kafka_server_raft_channel_metrics_$1
+    type: COUNTER
+
+  # Raft channel metrics - GAUGE types
+  - pattern: "kafka.server<type=raft-channel-metrics><>(.+):"
+    name: kafka_server_raft_channel_metrics_$1
+    type: GAUGE
+
+  # Broker metadata metrics
+  - pattern: kafka.server<type=BrokerMetadataMetrics><>(.+)
+    name: kafka_server_broker_metadata_$1
+    type: GAUGE
+
+  # =============================================================================
+  # CONTROLLER METRICS
+  # =============================================================================
+  
+  - pattern: kafka.controller<type=(.+), name=(.+)><>Value
+    name: kafka_controller_$1_$2
+    type: GAUGE
+
+  - pattern: kafka.controller<type=(.+), name=(.+)><>Count
+    name: kafka_controller_$1_$2_count
+    type: COUNTER
+
+  # =============================================================================
+  # NETWORK METRICS
+  # Request/response tracking
+  # =============================================================================
+  
+  - pattern: kafka.network<type=(.+), name=(.+), request=(.+), error=(.+)><>Count
+    name: kafka_network_$1_$2_count
+    type: COUNTER
+    labels:
+      request: "$3"
+      error: "$4"
+
+  - pattern: kafka.network<type=(.+), name=(.+), request=(.+)><>Count
+    name: kafka_network_$1_$2_count
+    type: COUNTER
+    labels:
+      request: "$3"
+
+  - pattern: kafka.network<type=(.+), name=(.+)><>Value
+    name: kafka_network_$1_$2
+    type: GAUGE
+
+  - pattern: kafka.network<type=(.+), name=(.+)><>Count
+    name: kafka_network_$1_$2_count
+    type: COUNTER
+
+  # =============================================================================
+  # LOG METRICS
+  # Partition and segment statistics
+  # =============================================================================
+  
+  - pattern: kafka.log<type=(.+), name=(.+), topic=(.+), partition=(.+)><>Value
+    name: kafka_log_$1_$2
+    type: GAUGE
+    labels:
+      topic: "$3"
+      partition: "$4"
+
+  - pattern: kafka.log<type=(.+), name=(.+)><>Value
+    name: kafka_log_$1_$2
+    type: GAUGE
+
+  # =============================================================================
+  # GENERIC SERVER METRICS
+  # Catch-all patterns for remaining metrics
+  # =============================================================================
+  
+  # With 2 labels
+  - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+), (.+)=(.+)><>Count
+    name: kafka_$1_$2_$3_count
+    type: COUNTER
+    labels:
+      "$4": "$5"
+      "$6": "$7"
+
+  - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+), (.+)=(.+)><>Value
+    name: kafka_$1_$2_$3
+    type: GAUGE
+    labels:
+      "$4": "$5"
+      "$6": "$7"
+
+  # With 1 label
+  - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+)><>Count
+    name: kafka_$1_$2_$3_count
+    type: COUNTER
+    labels:
+      "$4": "$5"
+
+  - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+)><>Value
+    name: kafka_$1_$2_$3
+    type: GAUGE
+    labels:
+      "$4": "$5"
+
+  # No labels
+  - pattern: kafka.(\w+)<type=(.+), name=(.+)><>Count
+    name: kafka_$1_$2_$3_count
+    type: COUNTER
+
+  - pattern: kafka.(\w+)<type=(.+), name=(.+)><>Value
+    name: kafka_$1_$2_$3
+    type: GAUGE
+
+  # Percentile metrics
+  - pattern: kafka.(\w+)<type=(.+), name=(.+)><>(\d+)thPercentile
+    name: kafka_$1_$2_$3
+    type: GAUGE
+    labels:
+      quantile: "0.$4"

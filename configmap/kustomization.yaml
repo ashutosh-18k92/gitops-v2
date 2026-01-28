@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonAnnotations:
+  argocd.argoproj.io/sync-options: "Replace=true"
+    
+# Which resources to include
+configMapGenerator:
+  - name: service-config
+    namespace: super-fortnight
+    files:
+      - services/superfortnight.yaml
+    options:
+      disableNameSuffixHash: true
+  - name: grafana-istio-dashboards
+    namespace: observability
+    files:
+      - grafana/dashboards/istio/istio-mesh-7639.json    # External file
+      - grafana/dashboards/istio/istio-service-7636.json    # External file
+      - grafana/dashboards/istio/istio-workload-7630.json    # External file
+    options:
+      disableNameSuffixHash: true
+  - name: kafka-metrics
+    namespace: kafka
+    files:
+      - kafka/metrics/jmx-exporter.yml    # External file
+    options:
+      disableNameSuffixHash: true   # Keep name as "kafka-metrics"
+
