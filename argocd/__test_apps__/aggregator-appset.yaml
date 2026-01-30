@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: aggregator-service
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: super-fortnight-dev
+          # - env: staging
+          # namespace: super-fortnight-staging
+          # - env: production
+          # namespace: super-fortnight
+  template:
+    metadata:
+      name: "aggregator-service-{{.env}}"
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
+        targetRevision: main
+        path: "deploy/overlays/{{.env}}"
+        kustomize:
+          version: v5.0.0
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
