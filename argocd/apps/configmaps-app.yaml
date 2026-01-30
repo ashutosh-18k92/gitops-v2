@@ -13,8 +13,6 @@ spec:
     repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
     targetRevision: HEAD
     path: configmap
-    directory:
-      recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: default
