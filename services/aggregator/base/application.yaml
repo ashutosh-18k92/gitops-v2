@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aggregator-service-dev
+  name: aggregator-service
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,15 +10,20 @@ spec:
   source:
     repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
     targetRevision: main
-    path: deploy/overlays/dev
+    path: deploy/overlays/production # Default path, will be patched
     kustomize:
       version: v5.0.0
   destination:
     server: https://kubernetes.default.svc
-    namespace: super-fortnight-dev
+    namespace: super-fortnight # Default namespace, will be patched
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
