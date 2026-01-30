@@ -8,92 +8,81 @@ This repository hosts the **ArgoCD Application definitions** that drive the Supe
 gitops-v2/
 ├── argocd/
 │   └── apps/
-│       ├── services-apps.yaml    # Root App-of-Apps (The Big Bang)
-│       └── aggregator-app.yaml   # Bootstrap app for Aggregator Service
-├── services/
-│   └── aggregator/               # Kustomize definitions for Aggregator Service
-│       ├── base/
-│       │   ├── application.yaml  # Base Application template
-│       │   └── kustomization.yaml
-│       ├── overlays/
-│       │   ├── dev/              # Dev Environment Definition
-│       │   ├── staging/          # Staging Environment Definition
-│       │   └── prod/             # Production Environment Definition
-│       └── kustomization.yaml    # Root "Switchboard" for this service
+│       ├── services-apps.yaml      # Root App-of-Apps
+│       └── aggregator-appset.yaml  # ApplicationSet for Aggregator Service
 ```
 
-## The "App of Apps" Cascading Flow
+## The ApplicationSet Pattern
 
-We use a cascading "App of Apps" pattern to enable single-click deployment of entire service ecosystems.
+We use **ArgoCD ApplicationSets** to dynamically manage potential environments for a service. This eliminates the need for manual file duplication.
 
 ### Flow Diagram
 
-```mermaid
-graph TD
-    %% Root of everything
-    AoA[Root App of Apps] -->|Deploys| AggBoot[aggregator-app]
-
-    %% Bootstrap App Layer
-    subgraph "Bootstrap Layer (gitops-v2)"
-    AggBoot -->|Points to| AggSwitch[services/aggregator/kustomization.yaml]
-    end
-
-    %% Service App Definition Layer
-    subgraph "Service Definition Layer"
-    AggSwitch -->|Generates| AppDev[Application: aggregator-service-dev]
-    AggSwitch -->|Generates| AppStage[Application: aggregator-service-staging]
-    AggSwitch -->|Generates| AppProd[Application: aggregator-service-prod]
-    end
-
-    %% Actual Service Deployment Layer
-    subgraph "Deployment Layer (feature team repo)"
-    AppDev -->|Points to| DevOverlay[deploy/overlays/dev]
-    AppStage -->|Points to| StageOverlay[deploy/overlays/staging]
-    AppProd -->|Points to| ProdOverlay[deploy/overlays/production]
-
-    DevOverlay -->|Deploy| K8sDev[Namespace: super-fortnight-dev]
-    StageOverlay -->|Deploy| K8sStage[Namespace: super-fortnight-staging]
-    ProdOverlay -->|Deploy| K8sProd[Namespace: super-fortnight]
-    end
-```
-
 ![ArgoCD Service Deployment Flow](argocd-service-deployment-flow.png)
 
-### 1. Bootstrap Layer (`argocd/apps/`)
+```mermaid
+graph TD
+    %% Root
+    Root[Root App: services-apps] -->|Deploys| AppSet[ApplicationSet: aggregator-service]
 
-The `aggregator-app.yaml` is the entry point. It points to `services/aggregator/`.
+    %% ApplicationSet Logic
+    subgraph "GitOps Control Plane (gitops-v2)"
+    AppSet -->|List Generator| GenList{Generator List}
+    GenList -->|Item: dev| AppDev[Application: aggregator-service-dev]
+    GenList -->|Item: staging| AppStage[Application: aggregator-service-staging]
+    GenList -->|Item: production| AppProd[Application: aggregator-service-prod]
+    end
 
-### 2. Service Definition Layer (`services/aggregator/`)
+    %% Deployment Layer
+    subgraph "Feature Team Repo (aggregator-service)"
+    AppDev -->|Syncs| OverlayDev[deploy/overlays/dev]
+    AppStage -->|Syncs| OverlayStage[deploy/overlays/staging]
+    AppProd -->|Syncs| OverlayProd[deploy/overlays/production]
+    end
 
-This directory contains a **Kustomize** build that generates the actual ArgoCD `Application` resources.
-
-- **`base/application.yaml`**: The template for the ArgoCD Application.
-- **`overlays/`**: Environment-specific patches (target namespace, repo path, etc.).
-- **`kustomization.yaml`**: The **Switchboard**.
-
-### 3. The Switchboard
-
-The root `services/aggregator/kustomization.yaml` controls which environments are active.
-
-**To enable all environments:**
-
-```yaml
-resources:
-  - overlays/dev
-  - overlays/staging
-  - overlays/prod
+    %% Cluster Layer
+    subgraph "Kubernetes Cluster"
+    OverlayDev -->|Deploy| NS-Dev[NS: super-fortnight-dev]
+    OverlayStage -->|Deploy| NS-Stage[NS: super-fortnight-staging]
+    OverlayProd -->|Deploy| NS-Prod[NS: super-fortnight]
+    end
 ```
 
-**To disable Production (e.g., during maintenance or initial rollout):**
+### Control Plane: `aggregator-appset.yaml`
+
+This file is the "Switchboard". It defines which environments are active using a simple list.
 
 ```yaml
-resources:
-  - overlays/dev
-  - overlays/staging
-  # - overlays/prod  <-- Just comment it out!
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: super-fortnight-dev
+          - env: staging
+            namespace: super-fortnight-staging
+          - env: production
+            namespace: super-fortnight
 ```
 
-ArgoCD will automatically prune the Application resources for commented-out environments.
+### How to Manage Environments
+
+**To add an environment:**
+Simply add a new item to the list:
+
+```yaml
+- env: qa
+  namespace: super-fortnight-qa
+```
+
+**To remove an environment (undeploy):**
+Simply remove the item from the list. ArgoCD will automatically prune the associated Application and all its resources.
+
+### Benefits
+
+- **Configuration, not Code**: Enabling/disabling environments is just data.
+- **Dynamic**: No need to create new files for new environments.
+- **Self-Service**: Feature teams just need to ensure `deploy/overlays/<env>` exists in their repo.
 
 ## Feature Team Workflow
 
@@ -101,8 +90,15 @@ Feature teams don't typically touch this repository. They work in their own serv
 
 ## Adding a New Service
 
-1. Create directory `services/<new-service>`.
-2. Copy the structure from `services/aggregator/`.
-3. Update `base/application.yaml` with the new service's Git URL.
-4. Update `overlays/` with correct namespaces and paths.
-5. Create a bootstrap app in `argocd/apps/<new-service>-app.yaml`.
+1. Create `argocd/apps/<new-service>-appset.yaml`.
+2. Copy the content from `aggregator-appset.yaml`.
+3. Update `metadata.name` and `repoURL`.
+4. Define the active environments in the `list` generator.
+
+## Related Documentation
+
+For comprehensive documentation on the platform architecture and workflows, see the centralized documentation in **gitops-v3/docs/**:
+
+- [ApplicationSet Pattern Architecture](../gitops-v3/docs/architecture/applicationset-pattern.md)
+- [Cloud-Native Workflow](../gitops-v3/docs/architecture/cloud-native-workflow.md)
+- [Platform Team Guide](../gitops-v3/docs/guides/platform-team-guide.md)
