@@ -1,0 +1,8 @@
+meshConfig:
+  accessLogFile: /dev/stdout
+  enableTracing: true
+  extensionProviders:
+    - name: jaeger
+      opentelemetry:
+        service: jaeger-collector.observability.svc.cluster.local
+        port: 4317

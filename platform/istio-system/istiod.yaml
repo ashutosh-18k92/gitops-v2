@@ -7,20 +7,18 @@ metadata:
     argocd.argoproj.io/sync-wave: "-40"
 spec:
   project: default
-  source:
-    chart: istiod
-    repoURL: https://istio-release.storage.googleapis.com/charts
-    targetRevision: 1.28.0
-    helm:
-      values: |
-        meshConfig:
-          accessLogFile: /dev/stdout
-          enableTracing: true
-          extensionProviders:
-            - name: jaeger
-              opentelemetry:
-                service: jaeger-collector.observability.svc.cluster.local
-                port: 4317
+  sources:
+    - repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
+      targetRevision: HEAD
+      ref: gitops
+
+    - repoURL: https://istio-release.storage.googleapis.com/charts
+      chart: istiod
+      targetRevision: 1.28.0
+      helm:
+        valueFiles:
+          - $gitops/platform/istio-system/istiod-values.yaml
+
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
