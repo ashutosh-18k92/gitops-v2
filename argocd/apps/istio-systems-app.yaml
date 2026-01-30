@@ -18,6 +18,6 @@ spec:
     namespace: istio-system
   syncPolicy:
     automated:
-      enabled: false
-    syncOptions:
-      - ApplyOutOfSyncOnly=true
+      enabled: true
+      prune: true
+      selfHeal: true
