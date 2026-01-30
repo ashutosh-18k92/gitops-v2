@@ -3,6 +3,5 @@ kind: Namespace
 metadata:
   name: super-fortnight
   labels:
-    name: "super-fortnight-microservices"
-    environment: development
+    name: "super-fortnight-apis"
     istio-injection: enabled
