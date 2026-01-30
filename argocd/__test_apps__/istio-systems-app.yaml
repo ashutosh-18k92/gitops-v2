@@ -1,8 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app-of-apps
+  name: istio-systems
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-40"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -10,10 +12,10 @@ spec:
   source:
     repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
     targetRevision: HEAD
-    path: argocd/apps
+    path: platform/istio-system
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: istio-system
   syncPolicy:
     automated:
       prune: true

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app-of-apps
+  name: test-app-of-apps
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
     targetRevision: HEAD
-    path: argocd/apps
+    path: argocd/__test_apps__
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
