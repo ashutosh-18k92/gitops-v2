@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: aggregator-service
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    # Git Files Generator - reads environment configs from feature team repo
+    - git:
+        repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
+        revision: main # Generator reads from main branch
+        files:
+          - path: "deploy/environments/*.yaml"
+
+  template:
+    metadata:
+      name: "aggregator-service-{{.env}}"
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+
+    spec:
+      project: default
+
+      # Multi-Source: Helm + Kustomize
+      sources:
+        # Source 1: Helm chart from sf-helm-registry
+        - repoURL: "{{.chartRepo}}"
+          targetRevision: "{{.chartVersion}}"
+          path: "{{.chartPath}}"
+          helm:
+            releaseName: aggregator
+            valueFiles:
+              - $values/deploy/base/values.yaml
+              - $values/deploy/overlays/{{.env}}/values.yaml
+
+        # Source 2: Kustomize patches from aggregator-service repo
+        - repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
+          targetRevision: "{{.env}}" # Use environment branch (dev, staging, prod)
+          ref: values # Reference for valueFiles
+
+        # Source 3: Kustomize overlays for post-processing
+        - repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
+          targetRevision: "{{.env}}" # Use environment branch (dev, staging, prod)
+          path: deploy/overlays/{{.env}}
+          kustomize:
+            # Kustomize will patch the Helm output
+            patches:
+              - target:
+                  kind: Deployment
+                path: patches/deployment.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.namespace}}"
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas

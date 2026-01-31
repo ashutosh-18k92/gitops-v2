@@ -6,7 +6,7 @@ metadata:
 spec:
   goTemplate: true
   generators:
-    # Git Files Generator - reads environment configs
+    # Git Files Generator - reads environment configs from feature team repo
     - git:
         repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
         revision: main
@@ -22,15 +22,15 @@ spec:
 
     spec:
       project: default
-
-      # Single source: Kustomize with Helm chart inflation
       source:
         repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
-        targetRevision: "{{.env}}" # Use environment branch (dev, staging, prod)
+        targetRevision: "{{.chartVersion}}" # Use chart version as Git tag
         path: "deploy/overlays/{{.env}}"
         kustomize:
-          # ArgoCD handles Helm 4.x compatibility internally
-          buildOptions: "--enable-helm --load-restrictor LoadRestrictionsNone"
+          buildOptions: "--enable-helm"
+          # Pass chart version to Kustomize
+          commonAnnotations:
+            chart-version: "{{.chartVersion}}"
 
       destination:
         server: https://kubernetes.default.svc
