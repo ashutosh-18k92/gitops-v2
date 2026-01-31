@@ -26,8 +26,8 @@ spec:
       sources:
         # Source 1: Helm chart from Git repository
         - repoURL: https://github.com/ashutosh-18k92/sf-helm-registry.git
-          targetRevision: v0.1.0 # Git tag for chart version
-          path: api # Path to chart in repo
+          targetRevision: v0.1.0
+          path: api
           helm:
             releaseName: aggregator
             valueFiles:
@@ -39,7 +39,7 @@ spec:
           targetRevision: "{{.env}}"
           ref: values
 
-        # Source 3: Kustomize patches
+        # Source 3: Kustomize patches (DEMONSTRATING THE ISSUE)
         - repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
           targetRevision: "{{.env}}"
           path: deploy/overlays/{{.env}}/patches
