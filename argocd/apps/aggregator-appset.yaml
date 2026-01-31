@@ -28,9 +28,7 @@ spec:
         repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
         targetRevision: "{{.env}}" # Use environment branch (dev, staging, prod)
         path: "deploy/overlays/{{.env}}"
-        kustomize:
-          # ArgoCD handles Helm 4.x compatibility internally
-          buildOptions: "--enable-helm --load-restrictor LoadRestrictionsNone"
+        kustomize: {} # buildOptions configured globally in argocd-cm
 
       destination:
         server: https://kubernetes.default.svc
