@@ -26,67 +26,129 @@ graph TD
     Root[Root App: services-apps] -->|Deploys| AppSet[ApplicationSet: aggregator-service]
 
     %% ApplicationSet Logic
-    subgraph "GitOps Control Plane (gitops-v2)"
-    AppSet -->|List Generator| GenList{Generator List}
-    GenList -->|Item: dev| AppDev[Application: aggregator-service-dev]
-    GenList -->|Item: staging| AppStage[Application: aggregator-service-staging]
-    GenList -->|Item: production| AppProd[Application: aggregator-service-prod]
+    subgraph "GitOps Control Plane - gitops-v2"
+    AppSet -->|Git Files Generator<br/>Reads from repo| GenGit{Git Files Generator}
+    GenGit -->|Reads| EnvConfigs[deploy/environments/*.yaml]
+    GenGit -->|Generates| AppDev[Application: aggregator-service-dev]
+    GenGit -->|Generates| AppProd[Application: aggregator-service-prod]
     end
 
-    %% Deployment Layer
-    subgraph "Feature Team Repo (aggregator-service)"
-    AppDev -->|Syncs| OverlayDev[deploy/overlays/dev]
-    AppStage -->|Syncs| OverlayStage[deploy/overlays/staging]
-    AppProd -->|Syncs| OverlayProd[deploy/overlays/production]
+    %% Feature Team Control
+    subgraph "Feature Team Repo - aggregator-service"
+    EnvConfigs -->|dev.yaml| ConfigDev[env: dev<br/>chartVersion: 0.1.0]
+    EnvConfigs -->|production.yaml| ConfigProd[env: production<br/>chartVersion: 0.2.0]
+    end
+
+    %% Multi-Source Pattern
+    subgraph "ArgoCD Multi-Source Deployment"
+    AppDev -->|Source 1: Helm Chart| HelmDev[sf-helm-registry/api v0.1.0]
+    AppDev -->|Source 2: Values| ValuesDev[deploy/overlays/dev/values.yaml]
+
+    AppProd -->|Source 1: Helm Chart| HelmProd[sf-helm-registry/api v0.2.0]
+    AppProd -->|Source 2: Values| ValuesProd[deploy/overlays/production/values.yaml]
     end
 
     %% Cluster Layer
     subgraph "Kubernetes Cluster"
-    OverlayDev -->|Deploy| NS-Dev[NS: super-fortnight-dev]
-    OverlayStage -->|Deploy| NS-Stage[NS: super-fortnight-staging]
-    OverlayProd -->|Deploy| NS-Prod[NS: super-fortnight]
+    HelmDev -->|Deploy| NS-Dev[NS: super-fortnight-dev]
+    HelmProd -->|Deploy| NS-Prod[NS: super-fortnight]
     end
+
+    style ConfigDev fill:#51cf66,stroke:#2f9e44
+    style ConfigProd fill:#51cf66,stroke:#2f9e44
 ```
 
 ### Control Plane: `aggregator-appset.yaml`
 
-This file is the "Switchboard". It defines which environments are active using a simple list.
+This ApplicationSet uses the **Git Files Generator** to read environment configurations from the feature team's repository. This gives teams full control over:
+
+- Which environments exist
+- Which chart version each environment uses
+- Environment-specific configuration
 
 ```yaml
 spec:
   generators:
-    - list:
-        elements:
-          - env: dev
-            namespace: super-fortnight-dev
-          - env: staging
-            namespace: super-fortnight-staging
-          - env: production
-            namespace: super-fortnight
+    - git:
+        repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
+        files:
+          - path: "deploy/environments/*.yaml"
+```
+
+Each environment is defined in a YAML file in the feature team's repo:
+
+**`deploy/environments/dev.yaml`**:
+
+```yaml
+env: dev
+namespace: super-fortnight-dev
+chartRepo: https://github.com/ashutosh-18k92/sf-helm-registry.git
+chartVersion: "0.1.0" # Team controls this!
+chartPath: api
 ```
 
 ### How to Manage Environments
 
-**To add an environment:**
-Simply add a new item to the list:
+**Feature teams control environments** by adding/removing files in their own repository.
 
-```yaml
-- env: qa
-  namespace: super-fortnight-qa
+**To add an environment:**
+Create a new environment file in the feature team repo:
+
+```bash
+cd aggregator-service
+cat > deploy/environments/qa.yaml <<EOF
+env: qa
+namespace: super-fortnight-qa
+chartRepo: https://github.com/ashutosh-18k92/sf-helm-registry.git
+chartVersion: "0.1.0"
+chartPath: api
+EOF
+
+git add deploy/environments/qa.yaml
+git commit -m "Add QA environment"
+git push
 ```
 
+ArgoCD automatically creates `aggregator-service-qa` Application!
+
 **To remove an environment (undeploy):**
-Simply remove the item from the list. ArgoCD will automatically prune the associated Application and all its resources.
+Delete the environment file:
+
+```bash
+git rm deploy/environments/qa.yaml
+git commit -m "Remove QA environment"
+git push
+```
+
+ArgoCD automatically prunes the Application and all its resources.
+
+**To upgrade chart version:**
+Edit the environment file:
+
+```bash
+vim deploy/environments/production.yaml
+# Change chartVersion: "0.1.0" → "0.2.0"
+git commit -m "Upgrade production to chart v0.2.0"
+git push
+```
 
 ### Benefits
 
-- **Configuration, not Code**: Enabling/disabling environments is just data.
-- **Dynamic**: No need to create new files for new environments.
-- **Self-Service**: Feature teams just need to ensure `deploy/overlays/<env>` exists in their repo.
+- **Team Autonomy**: Feature teams control chart versions and environments
+- **Git-Based**: All configuration in version control (feature team repo)
+- **Self-Service**: No platform team involvement for environment changes
+- **Helm 4.x Compatible**: Uses ArgoCD multi-source, not Kustomize helmCharts
+- **Gradual Rollout**: Test new chart versions in dev before production
 
 ## Feature Team Workflow
 
-Feature teams don't typically touch this repository. They work in their own service repositories (e.g., `aggregator-service`). This repository is maintained by the **Platform Team** to define _where_ and _how_ services are deployed.
+Feature teams have **full control** over their service deployments:
+
+- **Environments**: Managed in `deploy/environments/*.yaml` in their repo
+- **Chart Versions**: Specified per-environment in environment files
+- **Configuration**: Helm values in `deploy/base/` and `deploy/overlays/`
+
+The platform team maintains the ApplicationSet definitions in this repository, but teams control what gets deployed.
 
 ## Adding a New Service
 

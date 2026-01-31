@@ -6,27 +6,27 @@ metadata:
 spec:
   goTemplate: true
   generators:
-    # Git Files Generator - reads environment configs from feature team repo
-    - git:
-        repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
-        revision: main
-        files:
-          - path: "deploy/environments/*.yaml"
-
+    - list:
+        elements:
+          - env: dev
+            namespace: super-fortnight-dev
+          # - env: staging
+          # namespace: super-fortnight-staging
+          # - env: production
+          # namespace: super-fortnight
   template:
     metadata:
       name: "aggregator-service-{{.env}}"
       namespace: argocd
       finalizers:
         - resources-finalizer.argocd.argoproj.io
-
     spec:
       project: default
       sources:
-        # Source 1: Helm chart from sf-helm-registry with team-controlled version
-        - repoURL: "{{.chartRepo}}"
-          targetRevision: "{{.chartVersion}}"
-          path: "{{.chartPath}}"
+        # Source 1: Helm chart from sf-helm-registry with values
+        - repoURL: https://github.com/ashutosh-18k92/sf-helm-registry.git
+          targetRevision: main
+          path: api
           helm:
             releaseName: aggregator
             valueFiles:
@@ -37,18 +37,15 @@ spec:
         - repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
           targetRevision: main
           ref: values
-
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{.namespace}}"
-
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         # syncOptions:
         #   - CreateNamespace=true
-
       ignoreDifferences:
         - group: apps
           kind: Deployment
