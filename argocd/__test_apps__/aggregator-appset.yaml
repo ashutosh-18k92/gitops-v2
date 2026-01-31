@@ -26,8 +26,8 @@ spec:
         repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
         targetRevision: main
         path: "deploy/overlays/{{.env}}"
-        kustomize:
-          version: v5.0.0
+        # kustomize:
+        #   version: v5.0.0
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{.namespace}}"
