@@ -39,12 +39,10 @@ spec:
           targetRevision: "{{.env}}"
           ref: values
 
-        # Source 3: Kustomize patches (DEMONSTRATING THE ISSUE)
+        # Source 3: Kustomize patches (Testing without directory.recurse)
         - repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
           targetRevision: "{{.env}}"
           path: deploy/overlays/{{.env}}/patches
-          directory:
-            recurse: true
 
       destination:
         server: https://kubernetes.default.svc
