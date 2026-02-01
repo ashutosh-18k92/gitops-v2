@@ -6,12 +6,12 @@ commonAnnotations:
 
 # Which resources to include
 configMapGenerator:
-  - name: service-config
-    namespace: super-fortnight
-    files:
-      - services/superfortnight.yaml
-    options:
-      disableNameSuffixHash: true
+  # - name: service-config
+  #   namespace: super-fortnight
+  #   files:
+  #     - services/superfortnight.yaml
+  #   options:
+  #     disableNameSuffixHash: true
   - name: grafana-istio-dashboards
     namespace: observability
     files:
