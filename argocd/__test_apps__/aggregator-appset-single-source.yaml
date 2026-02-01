@@ -3,6 +3,8 @@ kind: ApplicationSet
 metadata:
   name: aggregator-service
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "100"
 spec:
   goTemplate: true
   generators:
