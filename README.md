@@ -159,8 +159,7 @@ gitops-v2/
 │   │   ├── services-apps.yaml      # Root App-of-Apps
 │   │   └── aggregator-appset.yaml  # ApplicationSet for Aggregator Service
 │   └── config/
-│       ├── argocd-cm-kustomize-helm.yaml  # Kustomize Helm support config
-│       └── ENABLE_KUSTOMIZE_HELM.md       # Configuration guide
+│       └── argocd-cm-kustomize-helm.yaml  # Kustomize Helm support config
 ```
 
 ## The ApplicationSet Pattern
