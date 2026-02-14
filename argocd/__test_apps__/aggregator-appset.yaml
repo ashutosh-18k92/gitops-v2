@@ -46,3 +46,4 @@ spec:
           kind: Deployment
           jsonPointers:
             - /spec/replicas
+            - /spec/template/spec/containers/0/env
