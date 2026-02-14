@@ -27,8 +27,8 @@ spec:
       # Single source: Kustomize overlay (includes Helm chart + patches)
       source:
         repoURL: https://github.com/ashutosh-18k92/aggregator-service.git
-        targetRevision: "{{.env}}"
-        path: deploy/overlays/{{.env}}
+        targetRevision: "{{.targetRevision}}"
+        path: deploy/overlays/{{.overlay}}
         kustomize: {} # Uses global --enable-helm from argocd-cm
 
       destination:
