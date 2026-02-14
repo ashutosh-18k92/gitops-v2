@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-pod-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ashutosh-18k92/gitops-v2.git
+    targetRevision: HEAD
+    path: test
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
