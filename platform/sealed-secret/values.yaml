@@ -1,0 +1,20 @@
+fullnameOverride: sealed-secrets-controller
+replicaCount: 1
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+# podAntiAffinity:
+#   preferredDuringSchedulingIgnoredDuringExecution:
+#   - weight: 100
+#     podAffinityTerm:
+#       labelSelector:
+#         matchExpressions:
+#         - key: app.kubernetes.io/name
+#           operator: In
+#           values:
+#           - sealed-secrets
+#       topologyKey: kubernetes.io/hostname
